@@ -5,6 +5,7 @@ import desafio.one.digitalinnovation.personapi.exception.PersonNotFoundExecpitio
 import desafio.one.digitalinnovation.personapi.service.PersonService;
 import desafio.one.digitalinnovation.personapi.service.impl.PersonServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,18 +24,29 @@ public class PersonController {
         this.personService = personService;
     }
 
-    @GetMapping
+    @GetMapping("/person/getAll")
     public ResponseEntity<List<PersonDTO>> getAllPerson() {
         return personService.getAllPerson();
     }
 
-    @PostMapping
+    @PostMapping("/person/add")
     public ResponseEntity<PersonDTO> createPerson(@RequestBody @Valid PersonDTO personDTO) {
         return personService.createPerson(personDTO);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/person/findById/{id}")
     public ResponseEntity<PersonDTO> findById(@PathVariable long id) throws PersonNotFoundExecpition {
         return personService.findById(id);
+    }
+
+    @DeleteMapping("/person/delete/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteById(@PathVariable long id) throws PersonNotFoundExecpition {
+        personService.delete(id);
+    }
+
+    @PutMapping("/person/update/{id}")
+    public ResponseEntity<PersonDTO> updatePersonById(@PathVariable long id, @RequestBody @Valid PersonDTO personDTO) throws PersonNotFoundExecpition {
+        return personService.updatePersonById(id, personDTO);
     }
 }

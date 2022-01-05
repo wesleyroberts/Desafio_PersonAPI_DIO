@@ -11,9 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.PersistenceException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PersonServiceImpl implements PersonService {
@@ -34,6 +34,14 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
+    public ResponseEntity<PersonDTO> updatePersonById(long id ,PersonDTO personDTO) throws PersonNotFoundExecpition {
+        existPerson(id);
+        Person updatePerson = personMapper.toModel(personDTO);
+        Person savedPerson = personRepository.save(updatePerson);
+        return ResponseEntity.status(HttpStatus.OK).body(personMapper.toDTO(savedPerson));
+    }
+
+    @Override
     public ResponseEntity<List<PersonDTO>> getAllPerson() {
         List<Person> personList = personRepository.findAll();
         List<PersonDTO> personDTOList = new ArrayList<PersonDTO>();
@@ -45,10 +53,16 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     public ResponseEntity<PersonDTO> findById(long id) throws PersonNotFoundExecpition {
-        Optional<Person> personOptional = personRepository.findById(id);
-        if(personOptional.isEmpty()){
-            throw  new PersonNotFoundExecpition();
-        }
-        return ResponseEntity.status(HttpStatus.FOUND).body(personMapper.toDTO(personOptional.get()));
+       return ResponseEntity.status(HttpStatus.FOUND).body(personMapper.toDTO(existPerson(id)));
+    }
+
+    @Override
+    public void delete(long id) throws PersonNotFoundExecpition {
+        personRepository.deleteById(existPerson(id).getId());
+    }
+
+    @Override
+    public Person existPerson(long id) throws PersonNotFoundExecpition {
+        return personRepository.findById(id).orElseThrow(() -> new PersonNotFoundExecpition());
     }
 }
